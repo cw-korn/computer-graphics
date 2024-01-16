@@ -9,18 +9,32 @@ CHARACTER_SCALING = 0.4
 TILE_SCALING = 0.5
 PLAYER_MOVEMENT_SPEED = 5
 GRAVITY = 1
-PLAYER_JUMP_SPEED =20
-COIN_SCALING =  1
+PLAYER_JUMP_SPEED = 20
+COIN_SCALING = 1
 
 class MyGame(arcade.Window):
     def __init__(self):
         super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
         arcade.set_background_color(arcade.csscolor.CORNFLOWER_BLUE)
-    def setup(self):
-        pass
+        self.player_list = arcade.SpriteList()
+        self.player_sprite = None
+        self.scene = None
+        self.player_sprite = None
+        self.physics_engine = None
+        self.camera = None
+        self.collect_coin_sound = arcade.load_sound(":resources:sounds/coin1.wav")
+        self.jump_sound = arcade.load_sound(":resources:sounds/jump1.wav")
+        self.score = 0
+
 
     def on_draw(self):
         self.clear()
+
+    def setup(self):
+        self.player_sprite = PlayerCharacter()
+
+    def on_update(self, delta_time: float):
+        self.scene.update_animation(delta_time, ["Player"])
 
 def main():
     window = MyGame()
@@ -32,10 +46,6 @@ if __name__ == "__main__":
     main()
 
 ####################################################################################################
-# add spite to scene
-def __init__(self):
-    self.player_list = arcade.SpriteList()
-    self.player_sprite = None
 
 
 def setup(self):
@@ -50,12 +60,9 @@ def on_draw(self):
     self.player_list.draw()
 
 
-
-###################################################################################################################################################################
+#############################################################################
 # add sprite to scene object
-def __init__(self):
-    self.scene = None
-    self.player_sprite = None
+
 
 def setup(self):
     self.scene = arcade.Scene()
@@ -130,9 +137,7 @@ def on_key_release(self, key, modifiers):
 
 ##############################################################################################################################
 # add user control physics
-def __init__(self):
-# Our physics engine
-    self.physics_engine = None
+
 
 
 def setup(self):
@@ -173,8 +178,7 @@ def on_key_press(self, key, modifiers):
 
 ##########################################################
 # add camera follow player
-def __init__(self):
-    self.camera = None
+
 
 
 def setup(self):
@@ -204,10 +208,7 @@ def on_update(self, delta_time):
 # add interaction objects and sound
 COIN_SCALING = 0.2
 
-def __init__(self):
 
-    self.collect_coin_sound = arcade.load_sound(":resources:sounds/coin1.wav")
-    self.jump_sound = arcade.load_sound(":resources:sounds/jump1.wav")
 
 
 def setup(self):
@@ -235,8 +236,7 @@ def on_update(self, delta_time):
 ##############################################################################################################################
 # add text gui
 
-def __init__(self):
-    self.score = 0
+
 
 def setup(self):
     self.score = 0
@@ -297,3 +297,5 @@ class MyGame(arcade.Window):
 
     def on_update(self, delta_time: float):
         self.scene.update_animation(delta_time, ["Player"])
+
+
