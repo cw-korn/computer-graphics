@@ -2,7 +2,7 @@ import arcade
 import random
 SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 650
-SCREEN_TITLE = "My First Arcade Game"
+SCREEN_TITLE = "Otter Speedrun"
 
 PLAYER_MOVEMENT_SPEED = 5
 CHARACTER_SCALING = 0.15
@@ -12,6 +12,7 @@ UPDATES_PER_FRAME = 5
 
 TILE_SCALING = 0.8
 ITEM_SCALING = 0.1
+SLIME_SCALING = 0.3
 
 def load_texture_pair(filename):
     return [arcade.load_texture(filename,flipped_horizontally=True),arcade.load_texture(filename)]
@@ -24,9 +25,12 @@ class PlayerCharacter(arcade.Sprite):
         self.scale = CHARACTER_SCALING
         self.cur_texture = 0
 
-        self.idle_texture_pair = load_texture_pair("week3/assets/otter1.png")
-        self.walk_textures = [load_texture_pair("week3/assets/otter2.png"),load_texture_pair("week3/assets/otter1.png")]
+        self.idle_texture_pair = load_texture_pair("computer-graphics/week3/assets/otter1.png")
+        self.walk_textures = [load_texture_pair("computer-graphics/week3/assets/otter2.png"),load_texture_pair("computer-graphics/week3/assets/otter1.png")]
         self.texture = self.idle_texture_pair[0]
+        #self.enemy_sprite_list = None
+        
+
 
     def update_animation (self, delta_time: float = 1/60):
         if self.change_x < 0 and self.character_face_direction == RIGHT_FACING:
@@ -54,6 +58,16 @@ class item(arcade.Sprite):
         self.center_y = random.randrange(SCREEN_HEIGHT + 20, SCREEN_HEIGHT + 100)
         self.center_x = random.randrange(SCREEN_WIDTH)
 
+class Enemy(arcade.Sprite):
+    def update(self):
+        self.center_x -= 2
+        if self.left < 0:
+            self.reset_pos()
+    
+    def reset_pos(self):
+        self.center_x = random.randrange(SCREEN_WIDTH,SCREEN_WIDTH +100)
+        self.center_y = random.randrange(SCREEN_HEIGHT)
+
 class MyGame(arcade.Window):
     def __init__(self):
         super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
@@ -63,23 +77,37 @@ class MyGame(arcade.Window):
         self.physics_engine = None
         self.item_sprite_list =None
         self.collect_sound = arcade.load_sound(":resources:sounds/coin1.wav")
+        self.hit_sound = arcade.load_sound(":resources:sounds/hurt4.wav")
         self.gui_camera = arcade.Camera(self.width, self.height)
         self.score = 0
         self.life = 3  # Add a life counter here
 
     def setup(self):
         self.scene = arcade.Scene()
-        image_source = 'week3/assets/otter1.png'
+        #image_source = 'computer-graphics/week3/assets/otter1.png'
         #self.player_sprite = arcade.Sprite(image_source, CHARACTER_SCALING, flipped_horizontally=True)
         self.player_sprite = PlayerCharacter()
         self.player_sprite.center_x = 64
         self.player_sprite.center_y = 128
-        self.scene.add_sprite("Player",self.player_sprite)
+        self.scene.add_sprite("Player", self.player_sprite)
+        self.gui_camera = arcade.Camera(self.width, self.height)
+        self.score = 0
+
+        #Slime
+        self.enemy_sprite_list = arcade.SpriteList()
+        for i in range(7):
+
+            slime = Enemy(f"computer-graphics/week3/assets/slime{i}.png", SLIME_SCALING)
+            slime.center_x = random.randrange(SCREEN_WIDTH)
+            slime.center_y = random.randrange(SCREEN_HEIGHT)
+            self.enemy_sprite_list.append(slime)
+        
+
         self.physics_engine = arcade.PhysicsEngineSimple(
             self.player_sprite, walls=None
         )
-        coordinate_list = [[512, 96], [256, 96], [768, 96], [512, 300], [256, 300], [768, 300], [512, 550], [256, 550],
-                           [768, 550]]
+
+        coordinate_list = [[512, 96], [256, 96], [768, 96], [512, 300], [256, 300], [768, 300], [512, 550], [256, 550], [768, 550]]
         i = 0
         for coordinate in coordinate_list:
             i += 1
@@ -93,11 +121,11 @@ class MyGame(arcade.Window):
         self.physics_engine = arcade.PhysicsEngineSimple(
             self.player_sprite, walls=self.scene["obstacles"]
         )
+
         self.item_sprite_list = arcade.SpriteList()
 
         for i in range(20):
-            shell = item("week3/assets/shell.png", ITEM_SCALING)
-            #shell = arcade.Sprite("assets/shell.png", ITEM_SCALING)
+            shell = item("computer-graphics/week3/assets/shell.png", ITEM_SCALING)
             shell.center_x = random.randrange(SCREEN_WIDTH)
             shell.center_y = random.randrange(SCREEN_HEIGHT)
             self.item_sprite_list.append(shell)
@@ -116,6 +144,11 @@ class MyGame(arcade.Window):
 
         if self.score ==20:
             arcade.draw_text("You Win", 400, 300,arcade.csscolor.GREEN,40)
+        elif self.life == 0: 
+            self.enemy_sprite_list.clear()
+            self.item_sprite_list.clear()
+            arcade.draw_text("You Lose", 400, 300,arcade.csscolor.DARK_RED,40)
+        self.enemy_sprite_list.draw()
 
 
     def on_key_press(self, key, modifiers):
@@ -140,17 +173,30 @@ class MyGame(arcade.Window):
 
     def on_update(self, delta_time):
         self.physics_engine.update()
+        self.item_sprite_list.update()
+        self.player_sprite.update_animation()
+
         item_hit_list = arcade.check_for_collision_with_list(
             self.player_sprite, self.item_sprite_list
         )
         for item in item_hit_list:
             item.remove_from_sprite_lists()
             arcade.play_sound(self.collect_sound)
-        self.item_sprite_list.update()
-        for item in item_hit_list:
-            self.score +=1
-        self.player_sprite.update_animation()
 
+        for item in item_hit_list:
+            self.score += 1
+
+        self.enemy_sprite_list.update()
+        slime_hit = arcade.check_for_collision_with_list(
+            self.player_sprite, self.enemy_sprite_list
+        )
+        for slime in slime_hit:
+            slime.remove_from_sprite_lists()
+            arcade.play_sound(self.hit_sound)
+        
+        for slime in slime_hit:
+            self.life -= 1
+        
 
 def main():
     window = MyGame()
