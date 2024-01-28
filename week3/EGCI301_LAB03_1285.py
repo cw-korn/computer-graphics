@@ -143,6 +143,8 @@ class MyGame(arcade.Window):
         arcade.draw_text(lifetext, 10, 600, arcade.csscolor.RED,24)
 
         if self.score ==20:
+            self.enemy_sprite_list.clear()
+            self.item_sprite_list.clear()            
             arcade.draw_text("You Win", 400, 300,arcade.csscolor.GREEN,40)
         elif self.life == 0: 
             self.enemy_sprite_list.clear()
