@@ -30,8 +30,8 @@ class PlayerCharacter(arcade.Sprite):
         self.character_face_direction = RIGHT_FACING
         self.scale = CHARACTER_SCALE
 
-        self.idle_texture_pair = load_texture_pair("computer-graphics/week2/arcstudy/assets/aether_idle.png")
-        self.walk_texture_pair = load_texture_pair("computer-graphics/week2/arcstudy/assets/aether.png")
+        self.idle_texture_pair = load_texture_pair("assets/aether_idle.png")
+        self.walk_texture_pair = load_texture_pair("assets/aether.png")
         self.texture = self.idle_texture_pair[0]
 
     def update_animation (self,delta_time: float = 1/60):
@@ -92,7 +92,7 @@ class MyGame(arcade.Window):
         )
 
         for x in range(128, 1300, 256):
-            coin = arcade.Sprite("computer-graphics/week2/arcstudy/assets/primogem.png", COIN_SCALE)
+            coin = arcade.Sprite("Assets/primogem.png", COIN_SCALE)
             coin.center_y = 96
             coin.center_x = x
             self .scene.add_sprite("Coin", coin)
